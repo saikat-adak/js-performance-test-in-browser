@@ -3,18 +3,20 @@
 let mainCollection = [];
 let secondaryCollection = [];
 
-const mainCollectionSize = 35000;
-const secondaryCollectionSize = 1000;
+const mainCollectionSize = 135000;
+const secondaryCollectionSize = 100000;
 
 initMainCollection(mainCollectionSize);
 
 initSecondaryCollection(secondaryCollectionSize);
 
 const startTime = Date.now();
-//compareWithFor(); //1202 ms
-//compareWithLodash(); //1079 ms
-//compareWithLodashAsync(); //1091 ms
-compareWithBasicFor(); //80 ms
+// compareWithFor(); //1202 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+// compareWithLodash(); //1079 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+// compareWithLodashAsync(); //1091 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+compareWithBasicFor(); //80 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000; 56,391ms for 1.3 lakhs records
+// compareWithForOf(); // 164 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+
 
 const endTime = Date.now();
 
@@ -61,6 +63,16 @@ async function compareWithBasicFor() {
         for (let j = 0; j < mainCollection.length; j++) {
             if (mainCollection[j].id === secondaryCollection[i].id) {
                 mainCollection[j].matched = true;
+            }
+        }
+    }
+}
+
+async function compareWithForOf() {
+    for (itemSecondary of secondaryCollection) {
+        for(itemPrimary of mainCollection) {
+            if (itemPrimary.id === itemSecondary.id) {
+                itemPrimary.matched = true;
             }
         }
     }
