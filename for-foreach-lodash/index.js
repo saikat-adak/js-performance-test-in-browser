@@ -3,28 +3,31 @@
 let mainCollection = [];
 let secondaryCollection = [];
 
-const mainCollectionSize = 135000;
-const secondaryCollectionSize = 100000;
+const mainCollectionSize = 20000;
+const secondaryCollectionSize = 5000;
 
 initMainCollection(mainCollectionSize);
-
 initSecondaryCollection(secondaryCollectionSize);
 
-const startTime = Date.now();
-// compareWithFor(); //1202 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-// compareWithLodash(); //1079 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-// compareWithLodashAsync(); //1091 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-compareWithBasicFor(); //80 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000; 56,391ms for 1.3 lakhs records
-// compareWithForOf(); // 164 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+console.log(
+    `Performance testing with ${mainCollectionSize} primary and ${secondaryCollectionSize} secondary collection`
+);
 
+measureTime(compareWithFor); //1202 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+measureTime(compareWithLodash); //1079 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+measureTime(compareWithLodashAsync); //1091 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+measureTime(compareWithBasicFor); //80 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000; 56,391ms for 1.3 lakhs records
+measureTime(compareWithForOf); // 164 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
 
-const endTime = Date.now();
+function measureTime(functionToExecute) {
+    const startTime = Date.now();
+    functionToExecute();
+    const endTime = Date.now();
 
-console.log(`Time taken: ${endTime - startTime}ms`);
+    console.log(`${functionToExecute.name}: ${endTime - startTime}ms`);
 
-let matchedCollection = mainCollection.filter((x) => x.matched);
-console.log(matchedCollection.length);
-console.log(matchedCollection);
+    let matchedCollection = mainCollection.filter((x) => x.matched);
+}
 
 //#region Different comparison functions
 
@@ -70,7 +73,7 @@ async function compareWithBasicFor() {
 
 async function compareWithForOf() {
     for (itemSecondary of secondaryCollection) {
-        for(itemPrimary of mainCollection) {
+        for (itemPrimary of mainCollection) {
             if (itemPrimary.id === itemSecondary.id) {
                 itemPrimary.matched = true;
             }
