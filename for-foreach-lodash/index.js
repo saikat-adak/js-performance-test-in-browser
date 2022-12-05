@@ -3,8 +3,8 @@
 let mainCollection = [];
 let secondaryCollection = [];
 
-const mainCollectionSize = 20000;
-const secondaryCollectionSize = 5000;
+const mainCollectionSize = 2000;
+const secondaryCollectionSize = 500;
 
 initMainCollection(mainCollectionSize);
 initSecondaryCollection(secondaryCollectionSize);
@@ -13,25 +13,29 @@ console.log(
     `Performance testing with ${mainCollectionSize} primary and ${secondaryCollectionSize} secondary collection`
 );
 
-measureTime(compareWithFor); //1202 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-measureTime(compareWithLodash); //1079 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-measureTime(compareWithLodashAsync); //1091 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-measureTime(compareWithBasicFor); //80 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000; 56,391ms for 1.3 lakhs records
-measureTime(compareWithForOf); // 164 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+measureTime(compareWithNestedForLoops);
+measureTime(compareWithLodashForeachAndFor);
+measureTime(compareWithLodashForeachAndAsyncFor); //1091 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+measureTime(compareWithAsyncFunctionWithNestedForLoops); //80 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000; 56,391ms for 1.3 lakhs records
+measureTime(compareWithNestedForOfLoops); // 164 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
 
 function measureTime(functionToExecute) {
     const startTime = Date.now();
     functionToExecute();
     const endTime = Date.now();
 
-    console.log(`${functionToExecute.name}: ${endTime - startTime}ms`);
+    console.log(
+        `${functionToExecute.name
+            .replace("compareWith", "")
+            .replace(/([A-Z])/g, " $1")}: ${endTime - startTime}ms`
+    );
 
     let matchedCollection = mainCollection.filter((x) => x.matched);
 }
 
 //#region Different comparison functions
 
-function compareWithFor() {
+function compareWithNestedForLoops() {
     for (let i in secondaryCollection) {
         for (let j in mainCollection) {
             if (mainCollection[j].id === secondaryCollection[i].id) {
@@ -41,7 +45,7 @@ function compareWithFor() {
     }
 }
 
-function compareWithLodash() {
+function compareWithLodashForeachAndFor() {
     _.forEach(secondaryCollection, (item) => {
         for (let j in mainCollection) {
             if (mainCollection[j].id === item.id) {
@@ -51,7 +55,7 @@ function compareWithLodash() {
     });
 }
 
-async function compareWithLodashAsync() {
+async function compareWithLodashForeachAndAsyncFor() {
     _.forEach(secondaryCollection, async (item) => {
         for (let j in mainCollection) {
             if (mainCollection[j].id === item.id) {
@@ -61,7 +65,7 @@ async function compareWithLodashAsync() {
     });
 }
 
-async function compareWithBasicFor() {
+async function compareWithAsyncFunctionWithNestedForLoops() {
     for (let i = 0; i < secondaryCollection.length; i++) {
         for (let j = 0; j < mainCollection.length; j++) {
             if (mainCollection[j].id === secondaryCollection[i].id) {
@@ -71,7 +75,7 @@ async function compareWithBasicFor() {
     }
 }
 
-async function compareWithForOf() {
+async function compareWithNestedForOfLoops() {
     for (itemSecondary of secondaryCollection) {
         for (itemPrimary of mainCollection) {
             if (itemPrimary.id === itemSecondary.id) {
