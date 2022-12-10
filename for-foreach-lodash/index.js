@@ -7,29 +7,42 @@ let mainCollection = [];
 initMainCollection(mainCollection, mainCollectionSize);
 
 let secondaryCollection = [];
-initSecondaryCollection(secondaryCollection, secondaryCollectionSize);
+initSecondaryCollection(secondaryCollection, secondaryCollectionSize, mainCollectionSize);
+
+let report = [];
+
+class OperationMetric {
+    constructor(operationName, executionTime) {
+        this.operationName = operationName;
+        this.executionTime = executionTime;
+    }
+}
 
 console.log(`Performance testing with ${mainCollectionSize} primary 
 and ${secondaryCollectionSize} secondary collection:`);
 
+
 measureTime(compareWithNestedForLoops);
 measureTime(compareWithLodashForeachAndFor);
-measureTime(compareWithLodashForeachAndAsyncFor); //1091 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
-measureTime(compareWithAsyncFunctionWithNestedForLoops); //80 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000; 56,391ms for 1.3 lakhs records
-measureTime(compareWithNestedForOfLoops); // 164 ms with mainCollectionSize = 35000, secondaryCollectionSize = 1000
+measureTime(compareWithLodashForeachAndAsyncFor);
+measureTime(compareWithAsyncFunctionWithNestedForLoops);
+measureTime(compareWithNestedForOfLoops);
+
+console.table(report);
 
 function measureTime(functionToExecute) {
     const startTime = Date.now();
     functionToExecute();
     const endTime = Date.now();
+    updateReport(functionToExecute.name, startTime, endTime);
+}
 
-    console.log(
-        `${functionToExecute.name
-            .replace("compareWith", "")
-            .replace(/([A-Z])/g, " $1")}: ${endTime - startTime}ms`
-    );
-
-    let matchedCollection = mainCollection.filter((x) => x.matched);
+function updateReport(funcName, startTime, endTime) {    
+    let operationName = funcName
+        .replace(/([A-Z])/g, " $1")
+        .replace("compare With ", "");
+    let executionTime = endTime - startTime;
+    report.push(new OperationMetric(operationName, executionTime));
 }
 
 //#region Different comparison functions
@@ -90,11 +103,14 @@ async function compareWithNestedForOfLoops() {
 
 function initMainCollection(mainCollection, arraySize) {
     for (let i = 0; i < arraySize; i++) {
-        mainCollection.push({ id: i, name: `test${i}` });
+        mainCollection.push({
+            id: i,
+            name: `test${i}`
+        });
     }
     return mainCollection;
 }
-function initSecondaryCollection(secondaryCollection, arraySize) {
+function initSecondaryCollection(secondaryCollection, arraySize, mainCollectionSize) {
     for (let i = 0; i < arraySize; i++) {
         secondaryCollection.push({
             id: Math.round(Math.random() * mainCollectionSize),
