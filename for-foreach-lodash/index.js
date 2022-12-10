@@ -1,15 +1,10 @@
 //This code compares the performance of for, foreach and lodash for a nested for loop with n^2 complexity
 
-const mainCollectionSize = 2000;
-const secondaryCollectionSize = 500;
-
-let mainCollection = [];
-initMainCollection(mainCollection, mainCollectionSize);
-
-let secondaryCollection = [];
-initSecondaryCollection(secondaryCollection, secondaryCollectionSize, mainCollectionSize);
-
-let report = [];
+const testDataSet = [
+    { mainCollectionSize: 500, secondaryCollectionSize: 125 },
+    { mainCollectionSize: 2000, secondaryCollectionSize: 500 }
+    // { mainCollectionSize: 20000, secondaryCollectionSize: 5000 }
+];
 
 class OperationMetric {
     constructor(operationName, executionTime) {
@@ -18,18 +13,34 @@ class OperationMetric {
     }
 }
 
-console.log(`Performance testing with ${mainCollectionSize} primary 
-and ${secondaryCollectionSize} secondary collection:`);
+let mainCollection = [];
+let secondaryCollection = [];
+let report = [];
 
+for (const testData of testDataSet) {
+    report = [];
+    initMainCollection(mainCollection, testData.mainCollectionSize);
 
-measureTime(compareWithNestedForLoops);
-measureTime(compareWithLodashForeachAndFor);
-measureTime(compareWithLodashForeachAndAsyncFor);
-measureTime(compareWithAsyncFunctionWithNestedForLoops);
-measureTime(compareWithNestedForOfLoops);
+    initSecondaryCollection(
+        secondaryCollection,
+        testData.secondaryCollectionSize,
+        testData.mainCollectionSize
+    );
 
-console.table(report);
+    console.log(
+        `Performance testing with ${testData.mainCollectionSize} primary and ${testData.secondaryCollectionSize} secondary collection:`
+    );
 
+    measureTime(compareWithNestedForLoops);
+    measureTime(compareWithLodashForeachAndFor);
+    measureTime(compareWithLodashForeachAndAsyncFor);
+    measureTime(compareWithAsyncFunctionWithNestedForLoops);
+    measureTime(compareWithNestedForOfLoops);
+
+    console.table(report);
+}
+
+//#region Measurement and reporting functions
 function measureTime(functionToExecute) {
     const startTime = Date.now();
     functionToExecute();
@@ -37,13 +48,14 @@ function measureTime(functionToExecute) {
     updateReport(functionToExecute.name, startTime, endTime);
 }
 
-function updateReport(funcName, startTime, endTime) {    
+function updateReport(funcName, startTime, endTime) {
     let operationName = funcName
         .replace(/([A-Z])/g, " $1")
         .replace("compare With ", "");
     let executionTime = endTime - startTime;
     report.push(new OperationMetric(operationName, executionTime));
 }
+//#endregion
 
 //#region Different comparison functions
 
@@ -105,12 +117,16 @@ function initMainCollection(mainCollection, arraySize) {
     for (let i = 0; i < arraySize; i++) {
         mainCollection.push({
             id: i,
-            name: `test${i}`
+            name: `test${i}`,
         });
     }
     return mainCollection;
 }
-function initSecondaryCollection(secondaryCollection, arraySize, mainCollectionSize) {
+function initSecondaryCollection(
+    secondaryCollection,
+    arraySize,
+    mainCollectionSize
+) {
     for (let i = 0; i < arraySize; i++) {
         secondaryCollection.push({
             id: Math.round(Math.random() * mainCollectionSize),
