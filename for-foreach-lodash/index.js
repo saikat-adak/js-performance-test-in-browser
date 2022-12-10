@@ -1,17 +1,16 @@
 //This code compares the performance of for, foreach and lodash for a nested for loop with n^2 complexity
 
-let mainCollection = [];
-let secondaryCollection = [];
-
 const mainCollectionSize = 2000;
 const secondaryCollectionSize = 500;
 
-initMainCollection(mainCollectionSize);
-initSecondaryCollection(secondaryCollectionSize);
+let mainCollection = [];
+initMainCollection(mainCollection, mainCollectionSize);
 
-console.log(
-    `Performance testing with ${mainCollectionSize} primary and ${secondaryCollectionSize} secondary collection`
-);
+let secondaryCollection = [];
+initSecondaryCollection(secondaryCollection, secondaryCollectionSize);
+
+console.log(`Performance testing with ${mainCollectionSize} primary 
+and ${secondaryCollectionSize} secondary collection:`);
 
 measureTime(compareWithNestedForLoops);
 measureTime(compareWithLodashForeachAndFor);
@@ -89,17 +88,19 @@ async function compareWithNestedForOfLoops() {
 
 //#region dummy data population logic
 
-function initMainCollection(arraySize) {
+function initMainCollection(mainCollection, arraySize) {
     for (let i = 0; i < arraySize; i++) {
         mainCollection.push({ id: i, name: `test${i}` });
     }
+    return mainCollection;
 }
-function initSecondaryCollection(arraySize) {
+function initSecondaryCollection(secondaryCollection, arraySize) {
     for (let i = 0; i < arraySize; i++) {
         secondaryCollection.push({
             id: Math.round(Math.random() * mainCollectionSize),
         });
     }
+    return secondaryCollection;
 }
 
 //#endregion
