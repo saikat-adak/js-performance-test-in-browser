@@ -1,24 +1,36 @@
-//This code compares the performance of for, foreach and lodash for a nested for loop with n^2 complexity
+/*
+This code compares the performance of different nested loops constructed with  
+for, foreach, for-of and lodash
+*/
+
+let mainCollection = []; // array for the outer loop
+let secondaryCollection = []; // array for the inner loop
+
+let resultDictionary = {};
+
+const operationNameHeader = "Looping construct|";
+const underlineText = "---|";
+const underlineTextRightAligned = "---:|";
 
 const testDataSet = [
     { mainCollectionSize: 500, secondaryCollectionSize: 125 },
-    { mainCollectionSize: 2000, secondaryCollectionSize: 500 }
-    // { mainCollectionSize: 20000, secondaryCollectionSize: 5000 }
+    { mainCollectionSize: 2000, secondaryCollectionSize: 500 },
+    { mainCollectionSize: 5000, secondaryCollectionSize: 1250 },
 ];
 
-class OperationMetric {
-    constructor(operationName, executionTime) {
-        this.operationName = operationName;
-        this.executionTime = executionTime;
-    }
-}
+// add all the looping constructs in this array to compare
+const functionsToCompare = [
+    compareWithNestedForLoops,
+    compareWithLodashForeachAndFor,
+    compareWithLodashForeachAndAsyncFor,
+    compareWithAsyncFunctionWithNestedForLoops,
+    compareWithNestedForOfLoops,
+];
 
-let mainCollection = [];
-let secondaryCollection = [];
-let report = [];
-
+// main execution starts here
 for (const testData of testDataSet) {
-    report = [];
+    initReport(testData, resultDictionary);
+
     initMainCollection(mainCollection, testData.mainCollectionSize);
 
     initSecondaryCollection(
@@ -27,20 +39,17 @@ for (const testData of testDataSet) {
         testData.mainCollectionSize
     );
 
-    console.log(
-        `Performance testing with ${testData.mainCollectionSize} primary and ${testData.secondaryCollectionSize} secondary collection:`
-    );
+    console.log(`Testing performance with ${testData.mainCollectionSize} primary and ${testData.secondaryCollectionSize} secondary data...`);
 
-    measureTime(compareWithNestedForLoops);
-    measureTime(compareWithLodashForeachAndFor);
-    measureTime(compareWithLodashForeachAndAsyncFor);
-    measureTime(compareWithAsyncFunctionWithNestedForLoops);
-    measureTime(compareWithNestedForOfLoops);
-
-    console.table(report);
+    for (const func of functionsToCompare) {
+        measureTime(func);
+    }
 }
 
+logReport();
+
 //#region Measurement and reporting functions
+
 function measureTime(functionToExecute) {
     const startTime = Date.now();
     functionToExecute();
@@ -48,13 +57,40 @@ function measureTime(functionToExecute) {
     updateReport(functionToExecute.name, startTime, endTime);
 }
 
+function initReport(testData) {
+    resultDictionary[operationNameHeader] = `${
+        resultDictionary[operationNameHeader] ?? ""
+    }${testData.mainCollectionSize} & ${testData.secondaryCollectionSize}|`;
+
+    resultDictionary[underlineText] = `${
+        resultDictionary[underlineText] ?? ""
+    }${underlineTextRightAligned}`;
+}
+
 function updateReport(funcName, startTime, endTime) {
     let operationName = funcName
         .replace(/([A-Z])/g, " $1")
         .replace("compare With ", "");
     let executionTime = endTime - startTime;
-    report.push(new OperationMetric(operationName, executionTime));
+
+    operationName = operationName + "|";
+    resultDictionary[operationName] = `${
+        resultDictionary[operationName] ?? ""
+    }${executionTime}|`;
 }
+
+function logReport() {
+    console.log(resultDictionary);
+    let resultTableForMdFile = `${operationNameHeader}${resultDictionary[operationNameHeader]}\n`;
+    resultTableForMdFile += `${underlineText}${resultDictionary[underlineText]}`;
+
+    for (const key of Object.keys(resultDictionary)) {
+        if (key === operationNameHeader || key === underlineText) continue;
+        resultTableForMdFile += `\n${key}${resultDictionary[key]}`;
+    }
+    console.log(resultTableForMdFile);
+}
+
 //#endregion
 
 //#region Different comparison functions
